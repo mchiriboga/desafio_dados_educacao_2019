@@ -1,0 +1,69 @@
+---
+title: "Análise TDI"
+author: "Marcelle Chiriboga"
+date: '2019-10-18'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readxl)
+```
+
+## Carregar os dados
+
+A base de dados consiste em informações referentes a distorção idade-série de 2012 a 2018. Os dados foram obtidos em http://portal.inep.gov.br/indicadores-educacionais -  `Taxas de distorção idade-série por escolas`.
+
+Para utilizar o script, coloque os arquivos de dados baixados numa pasta com nome `TDI` no mesmo diretório deste arquivo .Rmd. 
+
+```{r Carrega os dados, include = FALSE}
+# Lista os arquivos .xls(x) no diretório ../TDI
+files <- list.files(path = "./TDI", pattern = "*.xls*", full.names = T)
+
+# Junta o conteúdo de todos os arquivos encontrados em um único data frame
+tdi_data <- lapply(files, function(x) read_excel(x, skip = 9, col_names = FALSE, na = c('--','NA'), col_types = c('text'))) %>% 
+  bind_rows()
+```
+
+```{r Renomeia colunas}
+# Renomeia as colunas do data frame
+colnames(tdi_data) <- c(
+  "Ano",	
+  "Regiao",	
+  "UF",	
+  "Codigo do Municipio",	
+  "Nome do Municipio",	
+  "Codigo da Escola ",	
+  "Nome da Escola",
+  "Localizacao",
+  "Dependencia Administrativa",
+  "Ensino Fundamental - TDI - Total",
+  "Ensino Fundamental - TDI - Anos Iniciais",
+  "Ensino Fundamental - TDI - Anos Finais",
+  "Ensino Fundamental - TDI - Ano 1",
+  "Ensino Fundamental - TDI - Ano 2",
+  "Ensino Fundamental - TDI - Ano 3",
+  "Ensino Fundamental - TDI - Ano 4",
+  "Ensino Fundamental - TDI - Ano 5",
+  "Ensino Fundamental - TDI - Ano 6",
+  "Ensino Fundamental - TDI - Ano 7",
+  "Ensino Fundamental - TDI - Ano 8",
+  "Ensino Fundamental - TDI - Ano 9",
+  "Ensino Medio - TDI - Total",
+  "Ensino Medio - TDI - Ano 1",
+  "Ensino Medio - TDI - Ano 2",
+  "Ensino Medio - TDI - Ano 3",
+  "Ensino Medio - TDI - Ano 4"
+)
+```
+
+```{r Remove linhas desnecessárias}
+# Remove linhas vazias
+tdi_data <- tdi_data[rowSums(is.na(tdi_data)) != ncol(tdi_data) - 1,]
+```
+
+```{r Escreve .csv}
+# Salva o data frame tratado em formato .csv
+write.csv(tdi_data, "tdi_data.csv")
+```

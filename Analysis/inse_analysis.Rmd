@@ -1,0 +1,61 @@
+---
+title: "Análise INSE"
+author: "Marcelle Chiriboga"
+date: '2019-10-20'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r imports, include=FALSE}
+library(tidyverse)
+library(readxl)
+```
+
+## Carregar os dados
+
+A base de dados consiste em informações referentes ao indicador de nível socioeconômico 2015. Os dados foram obtidos em http://portal.inep.gov.br/indicadores-educacionais -  `Nível Socioeconômico`.
+
+Para utilizar o script, coloque o arquivo de dados baixado e o arquivo `munícipios.csv` numa pasta com nome `INSE` no mesmo diretório deste arquivo .Rmd. 
+
+```{r Carrega os dados}
+# Carrega os dados num data frame
+inse <- read_excel("./INSE/INSE_2015.xlsx", skip = 9)
+```
+
+```{r Tabelas auxiliares}
+# As tabelas abaixo são utilizadas para substituir códigos e IDs nas colunas do INSE pelos valores correspondentes de acordo com o dicionário disponibilizado
+municipios <- read.csv("./INSE/municipios.csv")
+id_area <- data.frame(k = c(0, 1), v = c("Interior", "Capital"))
+tp_dependencia <- data.frame(k = c(1, 2, 3, 4), v = c("Federal", "Estadual", "Municipal", "Privada"))
+tp_localizacao <- data.frame(k = c(1, 2), v = c("Urbana", "Rural"))
+```
+
+```{r Tratamento dos dados}
+# Substitui IDs por valores do dicionário e seleciona as colunas de interesse
+inse <- inse %>% 
+  mutate(
+    NOME_MUNICIPIO = municipios$NO_MUNICIPIO[match(CO_MUNICIPIO, municipios$CO_MUNICIPIO)],
+    TP_AREA = id_area$v[match(ID_AREA, id_area$k)],
+    TP_DEPENDENCIA = tp_dependencia$v[match(TP_DEPENDENCIA, tp_dependencia$k)],
+    TP_LOCALIZACAO = tp_localizacao$v[match(TP_LOCALIZACAO, tp_localizacao$k)]
+    ) %>% 
+  select(
+    NOME_ESCOLA,
+    NOME_UF,
+    NOME_MUNICIPIO,
+    TP_AREA,
+    TP_DEPENDENCIA,
+    TP_LOCALIZACAO,
+    QTD_ALUNOS_INSE,
+    INSE_VALOR_ABSOLUTO,
+    INSE_CLASSIFICACAO
+  )
+```
+
+```{r Escreve .csv}
+# Salva o data frame tratado em formato .csv
+write.csv(inse, "inse.csv")
+```
